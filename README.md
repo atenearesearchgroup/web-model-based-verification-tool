@@ -4,5 +4,7 @@
 node_modules/.bin/rollup src/app.js -f iife -o dist/app.bundle.js -p @rollup/plugin-node-resolve
 
 ## Start test server
-cd dist/
-node_modules/http-server/bin/http-server
+- In the "dist" directory:
+    cd dist/
+- Run the test server:
+    ../node_modules/http-server/bin/http-server
