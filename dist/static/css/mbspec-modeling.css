@@ -1,0 +1,130 @@
+@import "buttons.css";
+
+header{
+    background-color: #1B1F23;
+}
+
+#leftCol{
+    width: 100%;
+    border-right: 1px solid #CCC;
+    /* height: calc(100vh - 49px); */
+    height: calc(100vh);
+    background-color: #FFF;
+    border-right: 1px solid cyan;
+    overflow: auto;
+}
+.width-100-center{
+    width: 100%;
+    text-align: center;
+}
+#rightCol{
+    background-color: #21262C;
+    width:620px;
+}
+
+#MBSpecGraph{
+    width: 100%; 
+    text-align: center;
+}
+
+nav.topnav{
+    border-top: 1px solid cyan;
+    border-bottom: 1px solid cyan;
+}
+nav.topnav .btn{
+    border: none;
+    border-right: 1px solid cyan;
+    border-radius: 0px;
+    margin: 0px;
+    color: #4B8586;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    font-size: 0.9em;
+}
+nav.topnav .btn.last{
+    border-right: 1px solid cyan;
+}
+nav.topnav .btn:hover{
+    color: #fff;
+}        
+nav.topnav .btn.active{
+    color: #fff;
+    background-color: #21262C;
+}
+#rightCol nav.topnav{
+    background-color: #1B1F23;
+}
+
+.bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+@media (min-width: 768px) {
+    .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+    }
+}
+
+
+
+DIV#views{
+}
+    DIV#views DIV.viewForm{
+        padding-top: 30px;
+        padding-bottom: 60px;
+        padding-left: 10px;
+        padding-right: 10px; 
+        font-size: 0.8em;
+    }
+    DIV#views INPUT{
+        color: #CCC;
+        font-size: 0.9em;
+        background-color: #1B1F23;
+        border: 1px solid #666;
+    }
+    DIV#views LABEL{
+        display: block;
+        font-weight: bold;
+        color: #ccc;
+    }
+    DIV#views SELECT{
+        color: #CCC;
+        font-size: 0.9em;
+        background-color: #1B1F23;
+        border: 1px solid #666;
+    }    
+    DIV#views DIV.row{
+        --bs-gutter-x: 0.5rem;
+    }
+    DIV#associationViewForm SPAN.participant{
+        font-size: 1.1em;
+        color: #CCC;
+    }
+
+DIV#semanticModelView{
+    color: #CCC;
+    max-height: 300px;
+    overflow-y:scroll;
+    padding-left: 20px;
+}
+
+DIV#alloyModelView{
+    color: #CCC;
+    max-height: 300px;
+    overflow-y:scroll;
+    padding-left: 20px;
+}
+
+
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

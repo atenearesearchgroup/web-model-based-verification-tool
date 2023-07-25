@@ -1,0 +1,101 @@
+@import "buttons.css";
+
+body{
+    background-color: #1B1F23;
+    color: #CCC;
+}
+body header{
+    margin-top: 180px;
+    border-bottom: 1px solid cyan;
+    padding-bottom: 40px;
+    padding-top: 35px;    
+}
+body footer{
+    border-top: 1px solid cyan;
+    padding-top: 35px;    
+    padding-bottom: 30px;
+}
+body main{
+    padding-top: 20px;
+    padding-bottom: 40px;    
+}
+
+
+.mt-40{
+    margin-top: 40px;
+}
+.mt-60{
+    margin-top: 60px;
+}
+
+input.form-control{
+    margin-bottom: 10px;
+    border-color: cyan;
+    color: #FFF;
+    background-color: transparent;
+}
+div.alert{
+    border-radius: 0px;
+}
+
+div.alert-warning{
+    border-radius: 0px;
+    margin-left: 80px;
+    margin-right: 80px;
+}
+
+.btn.start{
+    font-size: 2em;
+    line-height: 2.5em;
+    border-radius: 30px;
+    margin-top: 30px;
+    margin-bottom: 40px;
+}
+
+.list-group.home{
+    background-color: transparent;
+}
+    .list-group.home .list-group-item{
+        background-color: #000;
+        margin:3px;
+        color: #CCC;
+        font-size: 1.4em;
+        border:none;
+    }
+
+h1.title{
+    color: #FFF;
+}
+p.lemma{
+    color: #9E9E9E;
+}
+p.home-options{
+    color: #ccc;
+}
+h1 u{
+    text-decoration-color: cyan;
+}
+
+header.dashboard{   
+    margin-top: 0px;
+    border-bottom: 1px solid cyan;
+    padding-bottom: 10px;
+    padding-top: 11px; 
+    padding-left: 8px;        
+}
+main.dashboard{
+    background-color: #FFF;
+    color: #333;
+}
+    main.dashboard h2{
+        color: #333;
+        border-bottom: 1px solid #ccc;
+    }
+        main.dashboard h2 u{
+            text-decoration-color: cyan;
+        }
+    main.dashboard .list-group-item{
+        background-color: transparent;
+        padding: 4px;
+        font-size: 0.9em;
+    }

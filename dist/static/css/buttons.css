@@ -1,0 +1,60 @@
+.btn{
+    border-radius: 0px;
+}
+.btn-primary{
+    background-color: #C100EA;
+    border-color: #C100EA;
+}
+    .btn-primary:hover{
+        background-color: #C100EA;
+        border-color: #ccc;
+    }
+.btn-secondary{
+    background-color: #144DFD;
+    border-color: #144DFD;
+    color: #FFF;
+}
+    .btn-secondary:hover{
+        border-color: #FFF;
+        background-color: #144DFD;
+    }
+.btn-primarylight{
+    background-color: #000;
+    border-color: #C100EA;
+    color: #FFF;
+    border-radius: 10px;
+}
+    .btn-primarylight:hover{
+        border-color: cyan;
+        background-color: #000;
+        color: #FFF;
+    }
+
+.btn.email{
+    color: #664d03;
+    font-weight: bold;
+}
+
+.btn.btn-outline-light{
+    border-color: #D1B86E;
+    color: #664d03;
+    font-weight: bold;
+}
+
+.btn.loginButton{
+    margin-top: 8px;
+    margin-bottom: 30px;
+    line-height: 50px;
+    font-size: 1.5em;
+}
+.btn.submit{
+    border-radius: 15px;
+}
+.btn-rounded-10{
+    border-radius: 10px;    
+}
+
+.btn.btn-specification-name{
+    border-color: none;
+    color: #FFF;
+}
