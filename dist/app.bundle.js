@@ -10298,11 +10298,11 @@
             let extension = new MBSpecExtension(id, fromNode, toNode);
             this.getUmlExtensions().push(extension);
             this.updateState();
-        }
+        } 
         addExtensionWithClass(newExtension){
             this.getUmlExtensions().push(newExtension);
             this.updateState();        
-        }    
+        }
         addAssociation(fromNode, toNode, id){
             let from = new MBSpecAssociationParticipant(fromNode, "", "", false);
             let to = new MBSpecAssociationParticipant(toNode, "", "", false);
@@ -10310,6 +10310,13 @@
             let newAssociation = new MBSpecAssociation(id, "", MBSpecAssociationTypes.ASSOCIATION, participants, null);        
             this.addAssociationWithClass(newAssociation);
         }
+        addAssociationWithCompleteData(fromNode, toNode, id, participantsRaw){
+            let from = new MBSpecAssociationParticipant(fromNode, participantsRaw[0].role, participantsRaw[0].cardinality, false);
+            let to = new MBSpecAssociationParticipant(toNode, participantsRaw[1].role, participantsRaw[1].cardinality, false);
+            let participants = [from, to];
+            let newAssociation = new MBSpecAssociation(id, "", MBSpecAssociationTypes.ASSOCIATION, participants, null);        
+            this.addAssociationWithClass(newAssociation);
+        }    
         addAssociationWithClass(newAssociation){
             this.getUmlAssociations().push(newAssociation);
             this.updateState();
@@ -10326,11 +10333,14 @@
             this.getDiagram().addClass(newClass);
             this.updateState();
         }  
-        addClassWithoutUpdatingTheDiagram(token, name, attributes, operations, stereotype, association, extension){
+        addClassFromDiagram(token, name, attributes, operations, stereotype, association, extension){
             let newClass = new MBSpecClass(token, name, attributes, operations, stereotype, association, extension);
             this.getUmlClasses().push(newClass);
             this.updateState();
-        } 
+        }
+        attributeToJson(attribute, type, derived){
+            return new MBSpecAttribute(attribute, type, derived)        
+        }
         deleteClass(id){
             this.getUmlClasses().forEach(function(item, index, object) {
                 if(item.id == id)
@@ -10411,6 +10421,11 @@
                 return Math.random().toString(36).substr(2);
             };
             return rand() + rand();
+        }
+        clearModel(){
+            this.umlmodel = new MBSpecUMLModel();
+            this.activeView = MBSpecViews.model;
+            this.updateModelViews();
         }
         getCookie(name) {
             var cookieValue = null;
@@ -12776,6 +12791,8 @@
                 "undoManager.isEnabled": false,
                 layout: $(TreeLayout,
                 { // this only lays out in trees nodes connected by "generalization" links
+                    isInitial: false,
+                    isOngoing: false,
                     angle: 90,
                     path: TreeLayout.PathSource,  // links go from child to parent
                     setsPortSpot: false,  // keep Spot.AllSides for link connection spot
@@ -12839,7 +12856,8 @@
                   { isMultiline: false, editable: false },
                   new Binding("text", "type").makeTwoWay())
             );
-      
+
+            
             this.diagram.nodeTemplate =
                 $(Node, "Auto", 
                 {
@@ -12866,7 +12884,7 @@
                         $(TextBlock,{
                             font: "bold 11pt sans-serif",
                             isMultiline: false, editable: false
-                        }, new Binding("text", "name").makeTwoWay())              
+                        }, new Binding("text", "name"))              
                     ),
                     // ATTRIBUTES
                     $(TextBlock, "ATTRIBUTES",
@@ -12924,6 +12942,7 @@
                     reshapable: true,
                     resegmentable: false
                 },
+                new Binding("points").makeTwoWay(),
                 new Binding("isLayoutPositioned", "relationship", this.convertIsTreeLink),
                 $(Shape, { strokeWidth: 1.4, stroke: "#333333" }),
                 $(Shape, { scale: 1, stroke: "#333333" }, new Binding("scale", "relationship", this.relationshipScale), new Binding("fill", "relationship", this.relationshipFill), new Binding("fromArrow", "relationship", this.relationshipFrom)),
@@ -13029,81 +13048,11 @@
             });
 
 
-
-            this.diagram.addModelChangedListener(function(evt) {
-                if (evt.isTransactionFinished && !evt.model.isReadOnly) {
-                    var tx = App.diagram.currentTool.transaction;
-                    if (tx && tx.name === "Initial Layout") {
-                        // Ignore the initial layout transaction
-                        return;
-                    }
-
-                    console.log(evt.object);
-
-                    
-                    // Model loaded from JSON using fromJson
-                    console.log("Model loaded from JSON");
-                }
+            this.diagram.addChangedListener(function(evt){
+            });
+            this.diagram.addModelChangedListener(function(event) {
             });
 
-            // this.diagram.addModelChangedListener(event => {
-            //     // ignore unimportant Transaction events
-            //     if (!event.isTransactionFinished) 
-            //         return
-
-            //     console.log("cosa")
-                
-            //     var txn = event.object;  // a Transaction
-            //     if (txn === null) 
-            //         return
-                
-            //     console.log(event.propertyName)
-                
-            //     // iterate over all of the actual ChangedEvents of the Transaction
-            //     txn.changes.each(e => {
-            //         // ignore any kind of change other than adding/removing a node
-            //         if (e.modelChange === "nodeDataArray" || e.modelChange === "linkDataArray") 
-            //             return
-            //         else {
-            //             console.log(event.propertyName)
-            //             // let data = e.oldValue.data
-            //             // if(e.oldValue instanceof go.Node)
-            //             //     App.addClassFromDiagram(e.oldValue)
-            //             // else if(e.oldValue instanceof go.Link){
-            //             //     if(data.relationship == "generalization")
-            //             //         App.addExtensionFromDiagram(data)
-            //             //     else
-            //             //         App.addAssociationFromDiagram(data)
-            //             // }                    
-            //         }
-            //         if (e.change === go.ChangedEvent.Remove) {
-            //             // actually, deleting
-            //             if(event.propertyName=="CommittedTransaction"){
-            //                 // const part = e.oldValue;
-            //                 // const nodeData = part.data;
-            //                 // if (part instanceof go.Node)
-            //                 //     App.deleteClass(nodeData.id)
-            //                 // else if (part instanceof go.Link){
-            //                 //     if(nodeData.relationship == "generalization")
-            //                 //         App.deleteExtension(nodeData.id)
-            //                 //     else
-            //                 //         App.deleteAssociation(nodeData.id)
-            //                 // }
-            //             }
-            //             // else if(event.propertyName=="FinishedUndo"){
-            //             //     let data = e.oldValue.data
-            //             //     if(e.oldValue instanceof go.Node)
-            //             //         App.addClassFromDiagram(e.oldValue)
-            //             //     else if(e.oldValue instanceof go.Link){
-            //             //         if(data.relationship == "generalization")
-            //             //             App.addExtensionFromDiagram(data)
-            //             //         else
-            //             //             App.addAssociationFromDiagram(data)
-            //             //     }
-            //             // }
-            //         }
-            //     });
-            // });
 
             this.disableLayout();
         }
@@ -13245,70 +13194,7 @@
         addExtension(fromNode, toNode, linkData){
             this.mbspec.addExtension(fromNode.name, toNode.name, linkData.id);
         }
-        addClassFromDiagram(oldValue){
-            let data = oldValue.data;
-            let attributes = [];
-            if(data.attributes!=null){
-                data.attributes.forEach(item => {
-                    attributes.push(new MBSpecAttribute(item.attribute, item.type, item.derived));
-                });
-            }
-            // const bounds = oldValue.actualBounds
-            // const x = bounds.x
-            // const y = bounds.y
-            // this.addClassWithLocation(data, new go.Point(x, y))
-            this.mbspec.addClassWithoutUpdatingTheDiagram(data.id, data.name, attributes, null, data.stereotype, null, data.extension);
-        }
-        addAssociationFromDiagram(data){
-            if(data.components.length == 2){
-                let nodeFromName = "";
-                let nodeToName = "";
 
-                const nodeFrom = this.diagram.findNodeForKey(data.from);
-                const nodeTo = this.diagram.findNodeForKey(data.to);
-
-                // this.diagram.nodes.each(function(item){
-                //     const data = item.data
-                //     const id = data.id
-                //     keys.push(item.key)
-                //     if(id == modifiedClass.id){
-                //         nodeToModify = item
-                //     }
-                // })
-
-                console.log("addAssociationFromDiagram.from", data.from);
-                console.log("addAssociationFromDiagram.to", data.to);
-                if(nodeFrom !==null)
-                    nodeFromName = nodeFrom.data.name;
-                if(nodeTo !==null)
-                    nodeToName = nodeTo.data.name;
-
-                const from = new MBSpecAssociationParticipant(nodeFromName, data.components[0].role, data.components[0].cardinality, false);
-                const to = new MBSpecAssociationParticipant(nodeToName, data.components[1].role, data.components[1].cardinality, false);
-                const participants = [from, to];
-                const newAssociation = new MBSpecAssociation(data.id, data.name, data.relationship, participants, null);    
-                this.mbspec.addAssociationWithClass(newAssociation);
-            }
-        }
-        addExtensionFromDiagram(data){
-            if(data.components.length == 2){
-                let nodeFromName = "";
-                let nodeToName = "";
-
-                const nodeFrom = this.diagram.findNodeForKey(data.from);
-                const nodeTo = this.diagram.findNodeForKey(data.to);
-
-                console.log("addExtensionFromDiagram.from", data.from);
-                console.log("addExtensionFromDiagram.to", data.to);
-                if(nodeFrom !==null)
-                    nodeFromName = nodeFrom.data.name;
-                if(nodeTo !==null)
-                    nodeToName = nodeTo.data.name;
-                
-                const newExtension = new MBSpecExtension(data.id, nodeFromName, nodeToName);
-                this.mbspec.addExtensionWithClass(newExtension);
-            }
-        }  
         addClass(newClass){
             const newNodePosition = this.computeNewNodePosition();
             this.addClassWithLocation(newClass, newNodePosition);
@@ -13343,9 +13229,13 @@
             });
 
             if(nodeToModify !== null){
-                nodeToModify.data = modifiedClass;
+                this.diagram.model.set(nodeToModify.data, "name", modifiedClass.name);
+                this.diagram.model.set(nodeToModify.data, "stereotype", modifiedClass.stereotype);
+                this.diagram.model.set(nodeToModify.data, "attributes", modifiedClass.attributes);
+                this.diagram.model.set(nodeToModify.data, "operations", modifiedClass.operations);
             }
             this.diagram.model.setKeyForNodeData(modifiedClass, modifiedClass.id);
+
             this.diagram.updateAllTargetBindings();        
             this.diagram.commitTransaction("node updated");
         }
@@ -13413,133 +13303,98 @@
         getLinkOption(){
             return this.mbspec.getLinkOption()
         }
-        syncDiagramWithModel(){
-            let App = this;
-            this.diagram.nodes.each(function(item){
-                const data = item.data;
-                const id = data.id;
-                if(id != ""){
-                    App.addClassFromDiagram(item);
+        syncMBSPECWithDiagramJson(value_parsed){
+            // First: clear the semantic model, wich includes the alloy model
+            this.mbspec.clearModel();
+
+            // Second: 
+            // - iterate over each nodeDataArray item to create a new class in the semantic model
+            // - create list of classes with name and id
+            let listOfClassesWithId = [];
+            value_parsed.nodeDataArray.forEach(data => {
+                let attributes = [];
+                if(data.attributes!=null){
+                    data.attributes.forEach(item => {
+                        attributes.push(this.mbspec.attributeToJson(item.attribute, item.type, item.derived));
+                    });
                 }
+                this.mbspec.addClassFromDiagram(data.id, data.name, attributes, null, data.stereotype, null, data.extension);
+                listOfClassesWithId.push({"id": data.id, "name": data.name});
             });
-            this.diagram.links.each(function(item){
-                const data = item.data;
-                const id = data.id;
-                if(id != ""){
-                    if(item.data.relationship == "generalization")
-                        App.addExtensionFromDiagram(item.data);
-                    else
-                        App.addAssociationFromDiagram(item.data);
+            console.log(listOfClassesWithId);
+
+            // Third: iterate over each link andData to create either generalization or association, according to the "relationship" attribute value
+            value_parsed.linkDataArray.forEach(data => {
+                let from = data.from;
+                let to = data.to;
+
+                listOfClassesWithId.forEach(item => {
+                    if(item.id == data.from)
+                        from = item.name;
+                    if(item.id == data.to)
+                        to = item.name;
+                });
+                if(data.relationship == "generalization")
+                    this.mbspec.addExtension(from, to, data.id);
+                else {
+                    const participants = [];
+                    participants.push( new MBSpecAssociationParticipant(from, data.components[0].role, data.components[0].cardinality, false) );
+                    participants.push( new MBSpecAssociationParticipant(to, data.components[1].role, data.components[1].cardinality, false) );
+                    
+                    const newAssociation = new MBSpecAssociation(data.id, data.name, data.relationship, participants, null);    
+                    console.log(newAssociation);
+                    this.mbspec.addAssociationWithClass(newAssociation);                
                 }
-            });
+
+            });        
         }
         exportToJson(){
             this.diagram.model.modelData.position = Point.stringify(this.diagram.position);
             return this.diagram.model.toJson()
         }
         loadFromJson(value){
+            const value_parsed = JSON.parse(value);
             this.diagram.model = Model.fromJson(value);
-            // set Diagram.initialPosition, not Diagram.position, to handle initialization side-effects
-            // var pos = this.diagram.model.modelData.position
-            // if(pos) 
-            //     this.diagram.initialPosition = go.Point.parse(pos)    
+            this.syncMBSPECWithDiagramJson(value_parsed);   
         }    
+
+    }
+
+    class Atenea {
+        data = []
+        nodedata = []
+        linkdata = []
+
+        constructor(data){
+            this.data = data;
+        }
+
+        setNodedata(nodedata){
+            this.nodedata = nodedata;
+        }
+        setLinkdata(linkdata){
+            this.linkdata = linkdata;
+        }
+        getNodedata(){
+            return this.nodedata
+        }
+        getLinkdata(){
+            return this.linkdata
+        }
+        load(){
+            let gojsAdapter = new GojsAdapter(this.getNodedata(), this.getLinkdata());
+            let mbspec = new MBSpec(gojsAdapter, this.data);
+            gojsAdapter.setMBSpec(mbspec);
+            gojsAdapter.syncMBSPECWithDiagramJson({"nodeDataArray": this.getNodedata(), "linkDataArray": this.getLinkdata()});
+        }
+
 
     }
 
     const data = document.currentScript.dataset;
 
 
-
-    // var nodedata = [
-    //     {
-    //       key: 1,
-    //       id: "idNice1",
-    //       name: "BankAccount",
-    //       __gohashid: "",
-    //       loc: "0 0",
-    //       attributes: [
-    //         { attribute: "owner", type: "String" },
-    //         { attribute: "balance", type: "Currency", default: "0" }
-    //       ],
-    //       methods: [
-    //         { attribute: "deposit", parameters: [{ name: "amount", type: "Currency" }]},
-    //         { attribute: "withdraw", parameters: [{ name: "amount", type: "Currency" }] }
-    //       ]
-    //     },
-    //     {
-    //       key: 11,
-    //       id: "idNice2",
-    //       name: "Person",
-    //       __gohashid: "id2",
-    //       loc: "0 0",      
-    //       attributes: [
-    //         { attribute: "name", type: "String" },
-    //         { attribute: "birth", type: "Date" }
-    //       ],
-    //       methods: [
-    //         { attribute: "getCurrentAge", type: "int" }
-    //       ]
-    //     },
-    //     {
-    //       key: 12,
-    //       id: "idNice3",
-    //       name: "Student",
-    //       __gohashid: "id3",
-    //       loc: "0 0",      
-    //       attributes: [
-    //         { attribute: "classes", type: "List<Course>" }
-    //       ],
-    //       methods: [
-    //         { attribute: "attend", parameters: [{ name: "class", type: "Course" }] },
-    //         { attribute: "sleep" }
-    //       ]
-    //     },
-    //     {
-    //       key: 13,
-    //       id: "idNice4",
-    //       name: "Professor",
-    //       __gohashid: "id4",
-    //       loc: "0 0",      
-    //       attributes: [
-    //         { attribute: "classes", type: "List<Course>" }
-    //       ],
-    //       methods: [
-    //         { attribute: "teach", parameters: [{ name: "class", type: "Course" }] }
-    //       ]
-    //     },
-    //     {
-    //       key: 14,
-    //       id: "idNice5",
-    //       name: "Course",
-    //       __gohashid: "id5",
-    //       loc: "0 0",      
-    //       attributes: [
-    //         { attribute: "name", type: "String" },
-    //         { attribute: "description", type: "String" },
-    //         { attribute: "professor", type: "Professor" },
-    //         { attribute: "location", type: "String" },
-    //         { attribute: "times", type: "List<Time>" },
-    //         { attribute: "prerequisites", type: "List<Course>" },
-    //         { attribute: "students", type: "List<Student>" }
-    //       ]
-    //     }
-    // ];
-    // var linkdata = [
-    //     { id: "a1", from: 12, to: 11, relationship: "generalization", "name": "asuno", "components": [{"role": "", "cardinality": "", "cardinality_visible": false, "role_visible": false}, {"role": "", "cardinality": "", "cardinality_visible": false, "role_visible": false}] },
-    //     { id: "a2", from: 13, to: 11, relationship: "association", "name": "asdos", "components": [{"role": "from", "cardinality": "1", "cardinality_visible": true, "role_visible": true}, {"role": "to", "cardinality": "*", "cardinality_visible": true, "role_visible": true}] },
-    //     { id: "a3", from: 13, to: 14, relationship: "aggregation", "name": "astres", "components": [{"role": "from", "cardinality": "1", "cardinality_visible": false, "role_visible": false}, {"role": "to", "cardinality": "*", "cardinality_visible": true, "role_visible": true}] },
-    //     { id: "a4", from: 1, to: 12, relationship: "composition", "name": "ascuatro", "components": [{"role": "from", "cardinality": "1", "cardinality_visible": false, "role_visible": false}, {"role": "to", "cardinality": "*", "cardinality_visible": true, "role_visible": true}] }
-    // ];
-
-    var nodedata = [];
-    var linkdata = [];
-    let gojsAdapter = new GojsAdapter(nodedata, linkdata);
-    let App = new MBSpec(gojsAdapter, data);
-    gojsAdapter.setMBSpec(App);
-    gojsAdapter.syncDiagramWithModel();
-
-
-    //window.addEventListener('DOMContentLoaded', startApp);
+    const App = new Atenea(data);
+    App.load();
 
 })();

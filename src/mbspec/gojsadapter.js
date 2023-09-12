@@ -17,6 +17,8 @@ class GojsAdapter{
             "undoManager.isEnabled": false,
             layout: $(go.TreeLayout,
             { // this only lays out in trees nodes connected by "generalization" links
+                isInitial: false,
+                isOngoing: false,
                 angle: 90,
                 path: go.TreeLayout.PathSource,  // links go from child to parent
                 setsPortSpot: false,  // keep Spot.AllSides for link connection spot
@@ -80,7 +82,8 @@ class GojsAdapter{
               { isMultiline: false, editable: false },
               new go.Binding("text", "type").makeTwoWay())
         );
-  
+
+        
         this.diagram.nodeTemplate =
             $(go.Node, "Auto", 
             {
@@ -107,7 +110,7 @@ class GojsAdapter{
                     $(go.TextBlock,{
                         font: "bold 11pt sans-serif",
                         isMultiline: false, editable: false
-                    }, new go.Binding("text", "name").makeTwoWay())              
+                    }, new go.Binding("text", "name"))              
                 ),
                 // ATTRIBUTES
                 $(go.TextBlock, "ATTRIBUTES",
@@ -165,6 +168,7 @@ class GojsAdapter{
                 reshapable: true,
                 resegmentable: false
             },
+            new go.Binding("points").makeTwoWay(),
             new go.Binding("isLayoutPositioned", "relationship", this.convertIsTreeLink),
             $(go.Shape, { strokeWidth: 1.4, stroke: "#333333" }),
             $(go.Shape, { scale: 1, stroke: "#333333" }, new go.Binding("scale", "relationship", this.relationshipScale), new go.Binding("fill", "relationship", this.relationshipFill), new go.Binding("fromArrow", "relationship", this.relationshipFrom)),
@@ -270,81 +274,11 @@ class GojsAdapter{
         });
 
 
-
-        this.diagram.addModelChangedListener(function(evt) {
-            if (evt.isTransactionFinished && !evt.model.isReadOnly) {
-                var tx = App.diagram.currentTool.transaction;
-                if (tx && tx.name === "Initial Layout") {
-                    // Ignore the initial layout transaction
-                    return;
-                }
-
-                console.log(evt.object)
-
-                
-                // Model loaded from JSON using fromJson
-                console.log("Model loaded from JSON");
-            }
+        this.diagram.addChangedListener(function(evt){
+        });
+        this.diagram.addModelChangedListener(function(event) {
         });
 
-        // this.diagram.addModelChangedListener(event => {
-        //     // ignore unimportant Transaction events
-        //     if (!event.isTransactionFinished) 
-        //         return
-
-        //     console.log("cosa")
-            
-        //     var txn = event.object;  // a Transaction
-        //     if (txn === null) 
-        //         return
-            
-        //     console.log(event.propertyName)
-            
-        //     // iterate over all of the actual ChangedEvents of the Transaction
-        //     txn.changes.each(e => {
-        //         // ignore any kind of change other than adding/removing a node
-        //         if (e.modelChange === "nodeDataArray" || e.modelChange === "linkDataArray") 
-        //             return
-        //         else {
-        //             console.log(event.propertyName)
-        //             // let data = e.oldValue.data
-        //             // if(e.oldValue instanceof go.Node)
-        //             //     App.addClassFromDiagram(e.oldValue)
-        //             // else if(e.oldValue instanceof go.Link){
-        //             //     if(data.relationship == "generalization")
-        //             //         App.addExtensionFromDiagram(data)
-        //             //     else
-        //             //         App.addAssociationFromDiagram(data)
-        //             // }                    
-        //         }
-        //         if (e.change === go.ChangedEvent.Remove) {
-        //             // actually, deleting
-        //             if(event.propertyName=="CommittedTransaction"){
-        //                 // const part = e.oldValue;
-        //                 // const nodeData = part.data;
-        //                 // if (part instanceof go.Node)
-        //                 //     App.deleteClass(nodeData.id)
-        //                 // else if (part instanceof go.Link){
-        //                 //     if(nodeData.relationship == "generalization")
-        //                 //         App.deleteExtension(nodeData.id)
-        //                 //     else
-        //                 //         App.deleteAssociation(nodeData.id)
-        //                 // }
-        //             }
-        //             // else if(event.propertyName=="FinishedUndo"){
-        //             //     let data = e.oldValue.data
-        //             //     if(e.oldValue instanceof go.Node)
-        //             //         App.addClassFromDiagram(e.oldValue)
-        //             //     else if(e.oldValue instanceof go.Link){
-        //             //         if(data.relationship == "generalization")
-        //             //             App.addExtensionFromDiagram(data)
-        //             //         else
-        //             //             App.addAssociationFromDiagram(data)
-        //             //     }
-        //             // }
-        //         }
-        //     });
-        // });
 
         this.disableLayout()
     }
@@ -486,70 +420,7 @@ class GojsAdapter{
     addExtension(fromNode, toNode, linkData){
         this.mbspec.addExtension(fromNode.name, toNode.name, linkData.id)
     }
-    addClassFromDiagram(oldValue){
-        let data = oldValue.data
-        let attributes = []
-        if(data.attributes!=null){
-            data.attributes.forEach(item => {
-                attributes.push(new mbspecmodel.MBSpecAttribute(item.attribute, item.type, item.derived))
-            })
-        }
-        // const bounds = oldValue.actualBounds
-        // const x = bounds.x
-        // const y = bounds.y
-        // this.addClassWithLocation(data, new go.Point(x, y))
-        this.mbspec.addClassWithoutUpdatingTheDiagram(data.id, data.name, attributes, null, data.stereotype, null, data.extension)
-    }
-    addAssociationFromDiagram(data){
-        if(data.components.length == 2){
-            let nodeFromName = ""
-            let nodeToName = ""
 
-            const nodeFrom = this.diagram.findNodeForKey(data.from)
-            const nodeTo = this.diagram.findNodeForKey(data.to)
-
-            // this.diagram.nodes.each(function(item){
-            //     const data = item.data
-            //     const id = data.id
-            //     keys.push(item.key)
-            //     if(id == modifiedClass.id){
-            //         nodeToModify = item
-            //     }
-            // })
-
-            console.log("addAssociationFromDiagram.from", data.from)
-            console.log("addAssociationFromDiagram.to", data.to)
-            if(nodeFrom !==null)
-                nodeFromName = nodeFrom.data.name
-            if(nodeTo !==null)
-                nodeToName = nodeTo.data.name
-
-            const from = new mbspecmodel.MBSpecAssociationParticipant(nodeFromName, data.components[0].role, data.components[0].cardinality, false)
-            const to = new mbspecmodel.MBSpecAssociationParticipant(nodeToName, data.components[1].role, data.components[1].cardinality, false)
-            const participants = [from, to]
-            const newAssociation = new mbspecmodel.MBSpecAssociation(data.id, data.name, data.relationship, participants, null)    
-            this.mbspec.addAssociationWithClass(newAssociation)
-        }
-    }
-    addExtensionFromDiagram(data){
-        if(data.components.length == 2){
-            let nodeFromName = ""
-            let nodeToName = ""
-
-            const nodeFrom = this.diagram.findNodeForKey(data.from)
-            const nodeTo = this.diagram.findNodeForKey(data.to)
-
-            console.log("addExtensionFromDiagram.from", data.from)
-            console.log("addExtensionFromDiagram.to", data.to)
-            if(nodeFrom !==null)
-                nodeFromName = nodeFrom.data.name
-            if(nodeTo !==null)
-                nodeToName = nodeTo.data.name
-            
-            const newExtension = new mbspecmodel.MBSpecExtension(data.id, nodeFromName, nodeToName)
-            this.mbspec.addExtensionWithClass(newExtension)
-        }
-    }  
     addClass(newClass){
         const newNodePosition = this.computeNewNodePosition()
         this.addClassWithLocation(newClass, newNodePosition)
@@ -584,9 +455,13 @@ class GojsAdapter{
         })
 
         if(nodeToModify !== null){
-            nodeToModify.data = modifiedClass
+            this.diagram.model.set(nodeToModify.data, "name", modifiedClass.name)
+            this.diagram.model.set(nodeToModify.data, "stereotype", modifiedClass.stereotype)
+            this.diagram.model.set(nodeToModify.data, "attributes", modifiedClass.attributes)
+            this.diagram.model.set(nodeToModify.data, "operations", modifiedClass.operations)
         }
         this.diagram.model.setKeyForNodeData(modifiedClass, modifiedClass.id)
+
         this.diagram.updateAllTargetBindings()        
         this.diagram.commitTransaction("node updated")
     }
@@ -654,36 +529,59 @@ class GojsAdapter{
     getLinkOption(){
         return this.mbspec.getLinkOption()
     }
-    syncDiagramWithModel(){
-        let App = this
-        this.diagram.nodes.each(function(item){
-            const data = item.data
-            const id = data.id
-            if(id != ""){
-                App.addClassFromDiagram(item)
+    syncMBSPECWithDiagramJson(value_parsed){
+        // First: clear the semantic model, wich includes the alloy model
+        this.mbspec.clearModel()
+
+        // Second: 
+        // - iterate over each nodeDataArray item to create a new class in the semantic model
+        // - create list of classes with name and id
+        let listOfClassesWithId = []
+        value_parsed.nodeDataArray.forEach(data => {
+            let attributes = []
+            if(data.attributes!=null){
+                data.attributes.forEach(item => {
+                    attributes.push(this.mbspec.attributeToJson(item.attribute, item.type, item.derived))
+                })
             }
+            this.mbspec.addClassFromDiagram(data.id, data.name, attributes, null, data.stereotype, null, data.extension)
+            listOfClassesWithId.push({"id": data.id, "name": data.name})
         })
-        this.diagram.links.each(function(item){
-            const data = item.data
-            const id = data.id
-            if(id != ""){
-                if(item.data.relationship == "generalization")
-                    App.addExtensionFromDiagram(item.data)
-                else
-                    App.addAssociationFromDiagram(item.data)
+        console.log(listOfClassesWithId)
+
+        // Third: iterate over each link andData to create either generalization or association, according to the "relationship" attribute value
+        value_parsed.linkDataArray.forEach(data => {
+            let from = data.from
+            let to = data.to
+
+            listOfClassesWithId.forEach(item => {
+                if(item.id == data.from)
+                    from = item.name
+                if(item.id == data.to)
+                    to = item.name
+            })
+            if(data.relationship == "generalization")
+                this.mbspec.addExtension(from, to, data.id)
+            else{
+                const participants = []
+                participants.push( new mbspecmodel.MBSpecAssociationParticipant(from, data.components[0].role, data.components[0].cardinality, false) )
+                participants.push( new mbspecmodel.MBSpecAssociationParticipant(to, data.components[1].role, data.components[1].cardinality, false) )
+                
+                const newAssociation = new mbspecmodel.MBSpecAssociation(data.id, data.name, data.relationship, participants, null)    
+                console.log(newAssociation)
+                this.mbspec.addAssociationWithClass(newAssociation)                
             }
-        })
+
+        })        
     }
     exportToJson(){
         this.diagram.model.modelData.position = go.Point.stringify(this.diagram.position)
         return this.diagram.model.toJson()
     }
     loadFromJson(value){
+        const value_parsed = JSON.parse(value)
         this.diagram.model = go.Model.fromJson(value)
-        // set Diagram.initialPosition, not Diagram.position, to handle initialization side-effects
-        // var pos = this.diagram.model.modelData.position
-        // if(pos) 
-        //     this.diagram.initialPosition = go.Point.parse(pos)    
+        this.syncMBSPECWithDiagramJson(value_parsed)   
     }    
 
 }

@@ -1,5 +1,5 @@
 
-## Node modules
+## Node modules to install
 - rollup
 - @types/jquery
 - http-server (any other web server is good)

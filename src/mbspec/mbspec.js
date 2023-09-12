@@ -511,11 +511,11 @@ export class MBSpec{
         let extension = new mbspecmodel.MBSpecExtension(id, fromNode, toNode)
         this.getUmlExtensions().push(extension)
         this.updateState()
-    }
+    } 
     addExtensionWithClass(newExtension){
         this.getUmlExtensions().push(newExtension)
         this.updateState()        
-    }    
+    }
     addAssociation(fromNode, toNode, id){
         let from = new mbspecmodel.MBSpecAssociationParticipant(fromNode, "", "", false)
         let to = new mbspecmodel.MBSpecAssociationParticipant(toNode, "", "", false)
@@ -523,6 +523,13 @@ export class MBSpec{
         let newAssociation = new mbspecmodel.MBSpecAssociation(id, "", mbspecmodel.MBSpecAssociationTypes.ASSOCIATION, participants, null)        
         this.addAssociationWithClass(newAssociation)
     }
+    addAssociationWithCompleteData(fromNode, toNode, id, participantsRaw){
+        let from = new mbspecmodel.MBSpecAssociationParticipant(fromNode, participantsRaw[0].role, participantsRaw[0].cardinality, false)
+        let to = new mbspecmodel.MBSpecAssociationParticipant(toNode, participantsRaw[1].role, participantsRaw[1].cardinality, false)
+        let participants = [from, to]
+        let newAssociation = new mbspecmodel.MBSpecAssociation(id, "", mbspecmodel.MBSpecAssociationTypes.ASSOCIATION, participants, null)        
+        this.addAssociationWithClass(newAssociation)
+    }    
     addAssociationWithClass(newAssociation){
         this.getUmlAssociations().push(newAssociation)
         this.updateState()
@@ -539,11 +546,14 @@ export class MBSpec{
         this.getDiagram().addClass(newClass)
         this.updateState()
     }  
-    addClassWithoutUpdatingTheDiagram(token, name, attributes, operations, stereotype, association, extension){
+    addClassFromDiagram(token, name, attributes, operations, stereotype, association, extension){
         let newClass = new mbspecmodel.MBSpecClass(token, name, attributes, operations, stereotype, association, extension)
         this.getUmlClasses().push(newClass)
         this.updateState()
-    } 
+    }
+    attributeToJson(attribute, type, derived){
+        return new mbspecmodel.MBSpecAttribute(attribute, type, derived)        
+    }
     deleteClass(id){
         this.getUmlClasses().forEach(function(item, index, object) {
             if(item.id == id)
@@ -624,6 +634,11 @@ export class MBSpec{
             return Math.random().toString(36).substr(2);
         };
         return rand() + rand();
+    }
+    clearModel(){
+        this.umlmodel = new mbspecmodel.MBSpecUMLModel()
+        this.activeView = MBSpecViews.model
+        this.updateModelViews()
     }
     getCookie(name) {
         var cookieValue = null;
